@@ -4,5 +4,5 @@ using System.Diagnostics;
 using P;
 
 
-var x = new NVimProcess("nvim", "--embed --headless", 1000000);
+var x = new NVimProcess("nvim", "--embed --headless --api-info", 1000000);
 x.ReceiveLoop();

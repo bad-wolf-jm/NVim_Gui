@@ -77,8 +77,8 @@ public class NVimProcess
             byte[] result;
             result = new byte[10];
             //var msg = await MessagePackSerializer.DeserializeAsync<NvimMessage>(_process.StandardOutput.BaseStream);
-            await _process.StandardOutput.BaseStream.ReadAsync(result);
-            Console.WriteLine(result);
+             _process.StandardOutput.BaseStream.Read(result);
+            Console.WriteLine(result.ToString());
             //Receive();
         }
         catch
