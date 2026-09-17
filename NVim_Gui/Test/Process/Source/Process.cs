@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 using MessagePack;
 // using System.Threading.Tasks;
 
@@ -26,33 +27,32 @@ public class NVimProcess
     
     private Stream _inputStream;
     private Stream _outputStream;
-
-    private MessagePackStreamReader _streamReader;
+    private Process _process;
 
     public NVimProcess(string command, string arguments, int timeout)
     {
         // var result = new ProcessResult();
 
-        var process = new Process();
+        _process = new Process();
         {
             // If you run bash-script on Linux it is possible that ExitCode can be 255.
             // To fix it you can try to add '#!/bin/bash' header to the script.
 
-            process.StartInfo.FileName = command;
-            process.StartInfo.Arguments = arguments;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardInput = true;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.CreateNoWindow = true;
+            _process.StartInfo.FileName = command;
+            _process.StartInfo.Arguments = arguments;
+            _process.StartInfo.UseShellExecute = false;
+            _process.StartInfo.RedirectStandardInput = true;
+            _process.StartInfo.RedirectStandardOutput = true;
+            _process.StartInfo.RedirectStandardError = true;
+            _process.StartInfo.CreateNoWindow = true;
 
             bool isStarted;
 
             try
             {
-                isStarted = process.Start();
-                _inputStream = process.StandardInput.BaseStream;
-                _outputStream = process.StandardOutput.BaseStream;
+                isStarted = _process.Start();
+                _inputStream = _process.StandardInput.BaseStream;
+                _outputStream = _process.StandardOutput.BaseStream;
                 // _streamReader = new MessagePackStreamReader(_inputStream);
             }
             catch (Exception error)
@@ -70,24 +70,32 @@ public class NVimProcess
         // return result;
     }
 
+    private async Task Receive()
+    {
+        try
+        {
+            byte[] result;
+            result = new byte[10];
+            //var msg = await MessagePackSerializer.DeserializeAsync<NvimMessage>(_process.StandardOutput.BaseStream);
+            await _process.StandardOutput.BaseStream.ReadAsync(result);
+            Console.WriteLine(result);
+            //Receive();
+        }
+        catch
+        {
+            Console.WriteLine("e.ToString()");
+        }
 
-    public void ReceiveLoop()
+    }
+
+
+    public async Task ReceiveLoop()
     {
         Console.WriteLine("Foo");
-        Receive();
 
-        async void Receive()
+        while (true)
         {
-            try
-            {
-                var msg = MessagePackSerializer.Deserialize<NvimMessage>(_outputStream);
-                //Console.WriteLine(msg);
-                Receive();
-            }
-            catch( Exception e) {
-                Console.WriteLine(e.ToString());
-            }
-           
+            await Receive();
         }
     }
 
